@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from "../assets/image.png"; // Adjust the path as necessary
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -11,13 +12,17 @@ export default function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Simulate loading
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsLoading(false);
-    // Navigate to dashboard
-    navigate("/dashboard");
+
+    // Navigate based on role
+    if (role === "Admin") {
+      navigate("/admin-dashboard");
+    } else {
+      navigate("/dashboard");
+    }
   };
 
   return (
@@ -30,15 +35,14 @@ export default function LoginPage() {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-">
+      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
         <div className="w-full max-w-md">
           {/* Logo/Brand section */}
           <div className="text-center mb-8">
-            {/* Added company logo */}
             <div className="flex justify-center mt-4 mb-8">
               <img 
-                src="public/Screenshot 2025-07-22 at 12.16.51 AM.png" 
-                /*alt="Company Logo"*/
+                src={logo} 
+                alt="Company Logo"
                 className="h-20 w-auto rounded-lg"
               />
             </div>
@@ -47,9 +51,8 @@ export default function LoginPage() {
             <p className="text-white text-opacity-80">Welcome back! Please sign in to continue.</p>
           </div>
 
-          {/* Rest of the code remains the same */}
           {/* Login form */}
-          <div className="bg-whitef bg-opacity-10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white border-opacity-20">
+          <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white border-opacity-20">
             <form onSubmit={handleLogin} className="space-y-6">
               {/* Email input */}
               <div className="relative">
