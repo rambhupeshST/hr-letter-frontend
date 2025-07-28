@@ -1,12 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
+  const templateMenuRef = useRef();
   const navigate = useNavigate();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        templateMenuRef.current &&
+        !templateMenuRef.current.contains(event.target)
+      ) {
+        setTemplateMenuOpen(false);
+      }
+    }
+    if (templateMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [templateMenuOpen]);
 
   const handleLogout = () => {
     navigate("/");
+  };
+
+  // Dropdown options
+  const templateOptions = [
+    { label: "Certification Reimbursement", value: "certification" },
+    { label: "HR Letter", value: "hr_letter" },
+    { label: "Internship Letter Completion", value: "internship_completion" },
+    { label: "Travel NOC Letter", value: "travel_noc" },
+    { label: "Visa Letter", value: "visa" },
+  ];
+
+  // Handle dropdown selection
+  const handleNewTemplateSelect = (type) => {
+    setTemplateMenuOpen(false);
+    if (type === "Certification Reimbursement") {
+      window.open(
+        "https://docs.google.com/document/d/193TkX-J6HHpoWx8Ahdhof3EukhGkk6VV/edit",
+        "_blank",
+        "noopener"
+      );
+    } else {
+      alert(`Selected: ${type}`);
+    }
   };
 
   const navItems = [
@@ -23,21 +64,21 @@ export default function AdminDashboard() {
       value: "42",
       color: "bg-gradient-to-r from-blue-600 to-blue-400",
       iconBg: "bg-blue-100 text-blue-600",
-      icon: "👥"
+      icon: "👥",
     },
     {
       title: "Pending Requests",
       value: "15",
       color: "bg-gradient-to-r from-amber-500 to-amber-400",
       iconBg: "bg-amber-100 text-amber-600",
-      icon: "⏳"
+      icon: "⏳",
     },
     {
       title: "Active Templates",
       value: "8",
       color: "bg-gradient-to-r from-emerald-500 to-emerald-400",
       iconBg: "bg-emerald-100 text-emerald-600",
-      icon: "📄"
+      icon: "📄",
     },
   ];
 
@@ -98,7 +139,7 @@ export default function AdminDashboard() {
                 templates: "Manage Templates",
                 requests: "Letter Requests",
                 users: "User Management",
-                settings: "Settings"
+                settings: "Settings",
               }[activeTab]}
             </h1>
             <span className="text-gray-600">Welcome, Admin 👋</span>
@@ -113,60 +154,139 @@ export default function AdminDashboard() {
                     className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition duration-300 border border-gray-100"
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-gray-600 font-medium">{stat.title}</h3>
-                      <div className={`w-10 h-10 ${stat.iconBg} rounded-lg flex items-center justify-center text-lg`}>
+                      <h3 className="text-gray-600 font-medium">
+                        {stat.title}
+                      </h3>
+                      <div
+                        className={`w-10 h-10 ${stat.iconBg} rounded-lg flex items-center justify-center text-lg`}
+                      >
                         {stat.icon}
                       </div>
                     </div>
-                    <p className="text-3xl font-bold text-gray-800">{stat.value}</p>
+                    <p className="text-3xl font-bold text-gray-800">
+                      {stat.value}
+                    </p>
                     <div className="w-full mt-3 h-2 bg-gray-100 rounded-full">
-                      <div className={`${stat.color} h-2 rounded-full`} style={{ width: `${(parseInt(stat.value) / 50) * 100}%` }}></div>
+                      <div
+                        className={`${stat.color} h-2 rounded-full`}
+                        style={{
+                          width: `${(parseInt(stat.value) / 50) * 100}%`,
+                        }}
+                      ></div>
                     </div>
                   </div>
                 ))}
               </div>
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800">Admin Overview</h2>
-                <p className="text-gray-600">Welcome to the admin Dashboard. Here you can manage letter templates, review requests, and administer user accounts.</p>
+                <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                  Admin Overview
+                </h2>
+                <p className="text-gray-600">
+                  Welcome to the admin Dashboard. Here you can manage letter
+                  templates, review requests, and administer user accounts.
+                </p>
               </div>
             </>
           )}
 
           {activeTab === "templates" && (
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">Letter Templates</h2>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <input type="text" placeholder="Search templates..." className="px-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">+ New Template</button>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                Letter Templates
+              </h2>
+              <div className="space-y-4" ref={templateMenuRef}>
+                <div className="flex justify-between items-center relative">
+                  <input
+                    type="text"
+                    placeholder="Search templates..."
+                    className="px-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {/* New Template Button and Dropdown */}
+                  <div className="relative">
+                    <button
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                      onClick={() =>
+                        setTemplateMenuOpen((prev) => !prev)
+                      }
+                    >
+                      + New Template
+                    </button>
+                    {/* Dropdown */}
+                    {templateMenuOpen && (
+                      <div className="absolute right-0 z-10 mt-2 w-64 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                        <div className="py-2">
+                          {templateOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition"
+                              onClick={() =>
+                                handleNewTemplateSelect(option.label)
+                              }
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
+                {/* Templates Table */}
                 <div className="border rounded-lg overflow-hidden">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Type
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Last Updated
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       <tr>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">Employment Verification</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">Verification</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">2023-05-15</td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                          Employment Verification
+                        </td>
                         <td className="px-6 py-4 text-sm text-gray-500">
-                          <button className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                          <button className="text-red-600 hover:text-red-900">Delete</button>
+                          Verification
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          2023-05-15
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          <button className="text-blue-600 hover:text-blue-900 mr-3">
+                            Edit
+                          </button>
+                          <button className="text-red-600 hover:text-red-900">
+                            Delete
+                          </button>
                         </td>
                       </tr>
                       <tr>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">Salary Certificate</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">Certificate</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">2023-04-28</td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                          Salary Certificate
+                        </td>
                         <td className="px-6 py-4 text-sm text-gray-500">
-                          <button className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                          <button className="text-red-600 hover:text-red-900">Delete</button>
+                          Certificate
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          2023-04-28
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          <button className="text-blue-600 hover:text-blue-900 mr-3">
+                            Edit
+                          </button>
+                          <button className="text-red-600 hover:text-red-900">
+                            Delete
+                          </button>
                         </td>
                       </tr>
                     </tbody>
@@ -175,8 +295,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           )}
-
-          {/* Other tabs like requests, users, and settings continue here… */}
+          {/* You can add more tab content here for "requests", "users", "settings"... */}
         </div>
       </main>
     </div>
