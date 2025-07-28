@@ -1,0 +1,93 @@
+Employee ID,Employee,Start date,Title,Home address - Full address
+ABC0012,Rhea Nambiar,01-09-2017,"Senior Manager, Engineering","1B-305, Harmony Residency, Tech Park Road, Sector 7, Bengaluru, Karnataka – 560099"
+ABC0013,Aarav Mehta,01-07-2018,"Manager,Engineering","#16, Greenview Colony, Post Lakshmipur, Tehsil Nandgarh, Kanpur Dehat, Uttar Pradesh – 209115"
+ABC0014,Pooja Sinha,14-06-2021,Senior Associate,"#22, Shantivihar Lane, Post Ramnagar, Tehsil Bhavapur, Kanpur Dehat, Uttar Pradesh – 209115"
+ABC0015,Abhishek Nair,23-06-2021,Senior Associate,"Flat 1B-305, Skylark Enclave, Nova Tech Road, Sector 4, Bengaluru, Karnataka – 560099"
+ABC0016,Tanya Deshpande,23-08-2021,Senior Associate,"#16, Sunrise Nagar, Post Devpur, Tehsil Lakshmiganj, Kanpur Dehat, Uttar Pradesh – 209115"
+ABC0017,Kunal Desai,09-05-2022,Associate,"Flat 2A-411, Maple Residency, Orion Main Road, Indiranagar, Bengaluru, Karnataka – 560038"
+ABC0018,Priya Rani,17-04-2023,Senior Associate,"House No. 17, Lotus Enclave, Sapphire Lane, Whitefield, Bengaluru, Karnataka – 560066"
+ABC0019,Siddharth Kulkarni,14-06-2021,Senior Associate,"Apartment 9C, Green Meadows, Sunrise Tech Park Road, Koramangala, Bengaluru, Karnataka – 560095"
+ABC0020,Ishita Saxena,15-12-2021,Senior Associate,"Unit 3B-208, Emerald Towers, Galaxy Avenue, HSR Layout Sector 6, Bengaluru, Karnataka – 560102"
+ABC0021,Deepak Joshi,25-07-2023,Senior Associate,"Villa No. 45, Tranquil Greens, Blossom Street, Yelahanka, Bengaluru, Karnataka – 560064"
+ABC0022,Kavita Joshi,02-01-2024,Senior Manager QA,"D-504, Sunrise Habitat, Eco Valley Road, Bellandur, Bengaluru, Karnataka – 560103"
+ABC0023,Nirav Thakkar,30-09-2024,Senior Associate,"Plot No. 112, Silver Springs Layout, JP Nagar Phase 5, Bengaluru, Karnataka – 560078"
+ABC0024,Radhika Rawat,14-10-2024,Senior Associate,"Flat 7A, Zenith Heights, Lakeview Cross, Rajarajeshwari Nagar, Bengaluru, Karnataka – 560098"
+ABC0025,Shreyas Dixit,17-10-2024,Associate,"No. 24, Harmony Residency, Bannerghatta Main Road, Arekere, Bengaluru, Karnataka – 560076"
+ABC0026,Ananya Mehra,01-04-2025,Senior Associate,"House No. 3, Rosewood Enclave, Techno Street, Marathahalli, Bengaluru, Karnataka – 560037"
+ABC0027,Mohit Sengupta,04-11-2024,Associate,"Flat 5C, Blue Horizon Apartments, Windmill Road, BTM Layout, Bengaluru, Karnataka – 560029"
+ABC0028,Sanjana Malhotra,01-07-2018,"Manager, Engineering","Villa No. 88, Serenity Greens, Pebble Garden Lane, Sarjapur Road, Bengaluru, Karnataka – 560035"
+ABC0029,Gaurav Tripathi,16-07-2018,"Manager, Analytics","No. 42, Palm Grove Residency, Cloudline Street, Kalyan Nagar, Bengaluru, Karnataka – 560043"
+ABC0030,Supriya Kaur,23-07-2018,"Manager, Implementation","Apartment 6B, Crescent Towers, Orion Tech Park Road, Hebbal, Bengaluru, Karnataka – 560024"
+ABC0031,Tushar Khanna,06-07-2020,Senior Associate,"Block A-103, Coral Enclave, Jasmine Avenue, Electronic City Phase 1, Bengaluru, Karnataka – 560100"
+ABC0032,Kruti Shah,23-06-2021,Senior Associate,"Flat 3D, Gardenia Heights, Tulip Lane, Nagarbhavi, Bengaluru, Karnataka – 560072"
+ABC0033,Hitesh Solanki,04-10-2021,Senior Associate,"Plot 77, Urban Crest Villas, Fern Hill Drive, Jakkur, Bengaluru, Karnataka – 560064"
+ABC0034,Lavanya Shetty,22-11-2021,Senior Associate,"No. 19, Sapphire Residency, Eco Space Link Road, Mahadevapura, Bengaluru, Karnataka – 560048"
+ABC0035,Vikas Rawat,15-12-2021,Senior Associate,"Unit 2F, Golden Summit Apartments, Harmony Lane, Yeshwanthpur, Bengaluru, Karnataka – 560022"
+ABC0036,Poonam Jha,24-01-2022,Manager QA,"House No. 150, Whispering Pines, Lotus Lane, Hennur, Bengaluru, Karnataka – 560077"
+ABC0037,Pooja Sinha,01-02-2022,Associate,"Flat B2-207, Riverstone Apartments, Cloud Valley Road, Indiranagar, Bengaluru, Karnataka – 560038"
+ABC0038,Juhi Yadav,13-06-2022,Associate,"House No. 91, Sapphire Garden Villas, Sunray Road, Banashankari Stage 2, Bengaluru – 560070"
+ABC0039,Neha Verma,21-07-2022,"Manager,  Engineering","Villa No. 18, Olive Woods, Harmony Lane, Uttarahalli, Bengaluru – 560061"
+ABC0040,Arjun Iyer,16-09-2022,Senior Associate,"Apt. 4A, Citadel Residency, Lakeview Road, Domlur, Bengaluru – 560071"
+ABC0041,Bhavna Chatterjee,13-09-2021,Senior Associate,"Plot 125, Blossom Enclave, East Park Street, RT Nagar, Bengaluru – 560032"
+ABC0042,Vikram Goel,28-10-2021,Principal Architect,"Unit 10C, Zen Residency, Emerald Avenue, Kaggadasapura, Bengaluru – 560093"
+ABC0043,Payal Suresh,03-07-2023,Senior Associate,"No. 52, Greenwoods, Crystal Garden Road, Basaveshwaranagar, Bengaluru – 560079"
+ABC0044,Swati Kulkarni,01-09-2017,Senior Associate,"Flat 7F, Maple Grove Apartments, Innovation Street, Brookefield, Bengaluru – 560037"
+ABC0045,Manish Shetty,01-09-2017,"Project Manager, Implementation","Villa No. 6, Euphoria Meadows, Sunrise Valley Road, KR Puram, Bengaluru – 560036"
+ABC0046,Ritesh Pandey,01-07-2018,Senior Associate,"Apartment 12B, Grand Iris, Galaxy Cross Road, Yelahanka New Town, Bengaluru – 560064"
+ABC0047,Aarti Menon,01-07-2018,"Manager, Implementation","D-109, Lotus Bloom Residency, Tech Edge Road, HSR Layout Sector 2, Bengaluru – 560102"
+ABC0048,Shalini Iyer,01-07-2018,"Manager, Engineering","No. 85, Jasmine County, Serenity Street, Vijayanagar, Bengaluru – 560040"
+ABC0049,Ankit Jain,01-10-2018,Manager - Engineering,"Block C-303, Azure Heights, Infinity Main Road, Bellandur, Bengaluru – 560103"
+ABC0050,Sneha Bhatia,01-08-2019,Senior Associate,"Unit 2E, Bright Oak Apartments, Sunrise Tech Lane, Banaswadi, Bengaluru – 560043"
+ABC0051,Bharat Saxena,15-02-2021,Senior Associate,"Villa No. 12, Redwood Hills, Blossom Garden Road, JP Nagar 9th Phase, Bengaluru – 560062"
+ABC0052,Aisha Kapoor,29-07-2021,"Project Manager, Implementation","Apartment 5C, Celestial Court, Moonlight Street, Jayanagar 4th Block, Bengaluru – 560011"
+ABC0053,Ashwin Menon,02-09-2021,Senior Associate,"Plot 201, Rosewood Estate, Orchid Street, Hennur Cross, Bengaluru – 560077"
+ABC0054,Isha Arora,07-06-2022,Senior Associate,"House No. 37, Whispering Willows, Pebble Ridge Road, Nagarbhavi 2nd Stage, Bengaluru – 560072"
+ABC0055,Anjali Das,08-06-2022,Senior Associate,"Flat A1-109, Springdale Residency, Lotus Garden Road, Kengeri, Bengaluru – 560060"
+ABC0056,Harshad Kadam,27-06-2022,Associate,"Unit 8B, Evergreen Enclave, Skyline View Road, Cox Town, Bengaluru – 560005"
+ABC0057,Sameer Reddy,03-11-2022,Senior Associate,"Flat 3C, Sunrise Residency, EcoSpace Road, Sarjapur Main Road, Bengaluru – 560102"
+ABC0058,Madhuri Thakur,01-07-2018,Manager,"Villa No. 21, Golden Oak Meadows, Blossom Avenue, Hulimavu, Bengaluru – 560076"
+ABC0059,Arvind Mishra,03-07-2023,Senior Associate,"Apt 2A, Bluebell Enclave, Galaxy Tech Park Road, Bommanahalli, Bengaluru – 560068"
+ABC0060,Simran Reddy,03-10-2023,Associate,"No. 63, Fern Residency, Crystal View Road, Banashankari Stage 3, Bengaluru – 560085"
+ABC0061,Karthik Pillai,20-11-2023,Senior Associate,"House No. 89, Coral Greens, Willow Street, HBR Layout, Bengaluru – 560045"
+ABC0062,Pooja Sinha,12-08-2024,Associate,"D-409, Skylark Residency, Innovation Road, Kadubeesanahalli, Bengaluru – 560103"
+ABC0063,Meher Lamba,18-11-2024,Senior Associate,"Unit 5D, Misty Meadows, Harmony Street, Vijaya Bank Layout, Bengaluru – 560076"
+ABC0064,Devansh Patil,16-07-2025,Senior Associate,"Plot No. 142, Sunrise Valley, Oak Lane, Kanakapura Road, Bengaluru – 560062"
+ABC0065,Nikhil Bansal,01-09-2017,Senior Associate,"Block A-210, Silver Heights, Moonlight Street, Kalyan Nagar, Bengaluru – 560043"
+ABC0066,Juhi Yadav,05-12-2017,Senior Manager,"Flat 6B, Emerald Residency, Greenline Road, Nagawara, Bengaluru – 560045"
+ABC0067,Omkar Bhatt,01-07-2018,Senior Associate,"Villa No. 34, Whispering Pines, Cloudview Lane, Thanisandra, Bengaluru – 560077"
+ABC0068,Vidya Ghosh,01-07-2018,Manager - Engineering,"Apartment 11F, Serenity Towers, Rose Street, Marathahalli, Bengaluru – 560037"
+ABC0069,Akash Dubey,13-01-2020,"Manager, AdTech & Conversion Optimization","No. 78, Amber Enclave, Tech Boulevard, Hebbal Kempapura, Bengaluru – 560024"
+ABC0070,Krish Chaudhary,19-08-2020,Senior Associate,"Flat B3-302, Urban Nest Apartments, Sunrise Hill Road, BTM 2nd Stage, Bengaluru – 560076"
+ABC0071,Meena Chaudhary,08-02-2021,Senior Associate,"Unit 9A, The Garden Residency, Jasmine Lane, Rajarajeshwari Nagar, Bengaluru – 560098"
+ABC0072,Tanmay Dutta,15-02-2021,Senior Associate,"Plot 55, Green Valley Homes, Fern Garden Road, Electronic City Phase 2, Bengaluru – 560100"
+ABC0073,Rohan Sharma,05-07-2021,Senior Associate,"Flat 4D, Zenith Apartments, Pine Street, HSR Layout Sector 3, Bengaluru – 560102"
+ABC0074,Tanvi Mishra,19-07-2021,Senior Associate,"No. 32, Crystal Meadows, Maple Avenue, Jalahalli East, Bengaluru – 560014"
+ABC0075,Ananya Mehra,21-09-2021,Senior Associate,"Block C-507, Tranquil Towers, Skyview Road, Whitefield, Bengaluru – 560066"
+ABC0076,Charu Bhargava,04-10-2021,Technical Architect,"House No. 12, Orchid Park, Lotus Enclave, Nagarbhavi 1st Stage, Bengaluru – 560072"
+ABC0077,Yash Sinha,22-11-2021,Senior Associate,"Flat 2F, Crystal Residency, Harmony Lane, Indiranagar 2nd Stage, Bengaluru – 560038"
+ABC0078,Deepika Pillai,08-12-2021,Senior Associate,"Villa No. 29, Rose Valley Homes, Orchid Garden Road, Jakkur, Bengaluru – 560064"
+ABC0079,Aditya Verma,18-04-2022,Senior Associate,"Apartment 7B, Golden Crest, Moonbeam Cross, Banaswadi, Bengaluru – 560043"
+ABC0080,Kavya Dubey,13-06-2022,Associate,"No. 116, Emerald Park, Techway Road, Malleshwaram, Bengaluru – 560003"
+ABC0081,Sandeep Rao,13-06-2022,Associate,"D-301, Spring Breeze Residency, Sunshine Street, Bommasandra, Bengaluru – 560099"
+ABC0082,Alisha Sehgal,04-07-2022,Associate,"Plot No. 88, Silver Oak Villas, Garden Ring Road, Vidyaranyapura, Bengaluru – 560097"
+ABC0083,Neel Jadhav,23-03-2023,Associate,"Flat A5-407, Coral Residency, Windflower Lane, Kengeri Satellite Town, Bengaluru – 560060"
+ABC0084,Divya Patil,03-10-2023,Associate,"Unit 10E, Urban Edge Apartments, Tulip Cross Road, Bellandur, Bengaluru – 560103"
+ABC0085,Raj Malhotra,16-11-2023,Associate,"House No. 45, Pearl Greens, Eco Garden Road, Yeshwanthpur, Bengaluru – 560022"
+ABC0086,Shruti Nair,01-07-2024,Associate,"Block B-204, Zenith Meadows, Sunrise Avenue, Basavanagudi, Bengaluru – 560004"
+ABC0087,Rahul Das,29-07-2024,Senior Associate,"Flat 9C, Serene Heights, Skylight Street, RMV 2nd Stage, Bengaluru – 560094"
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
