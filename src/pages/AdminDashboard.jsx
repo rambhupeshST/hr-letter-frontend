@@ -6,6 +6,45 @@ export default function AdminDashboard() {
   const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
   const templateMenuRef = useRef();
   const navigate = useNavigate();
+  const [employeeData, setEmployeeData] = useState([]);
+  const [apiError, setApiError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [letterRequests, setLetterRequests] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState(0);
+  const filteredEmployees = employeeData.filter(
+    (row) =>
+      (row.name && row.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (row.employeeId && row.employeeId.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  // Dropdown options and their corresponding links
+  const templateOptions = [
+    {
+      label: "Certification Reimbursement",
+      value: "certification",
+      url: "https://docs.google.com/document/d/193TkX-J6HHpoWx8Ahdhof3EukhGkk6VV/edit",
+    },
+    {
+      label: "HR Letter",
+      value: "hr_letter",
+      url: "https://docs.google.com/document/d/1SgBMZYqTtQlbvUbk38S3YXk-b0xokwl4/edit",
+    },
+    {
+      label: "Internship Letter Completion",
+      value: "internship_completion",
+      url: "https://docs.google.com/document/d/1YuRniRa8TlCRB9-x0oWFPMMkxmUCJfOR/edit",
+    },
+    {
+      label: "Travel NOC Letter",
+      value: "travel_noc",
+      url: "https://docs.google.com/document/d/1wc6birpYSbuxyQhDgHLD-2yaapLJEawl/edit",
+    },
+    {
+      label: "Visa Letter",
+      value: "visa",
+      url: "https://docs.google.com/document/d/1KGIPp31eyIGixIfBqk3O20nrHY47oq_N/edit",
+    },
+  ];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -23,30 +62,71 @@ export default function AdminDashboard() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [templateMenuOpen]);
 
+  useEffect(() => {
+    fetch("http://localhost:4000/api/employees")
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to load employee data");
+        return response.json();
+      })
+      .then((data) => {
+        setEmployeeData(data);
+      })
+      .catch((err) => setApiError(err.message));
+  }, []);
+
+  useEffect(() => {
+    fetchLetterRequests();
+  }, []);
+
+  const fetchLetterRequests = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/api/letter-requests");
+      if (response.ok) {
+        const data = await response.json();
+        setLetterRequests(data);
+        setPendingRequests(data.filter(req => req.status === 'pending').length);
+      }
+    } catch (error) {
+      console.error('Error fetching letter requests:', error);
+    }
+  };
+
   const handleLogout = () => {
     navigate("/");
   };
 
-  // Dropdown options
-  const templateOptions = [
-    { label: "Certification Reimbursement", value: "certification" },
-    { label: "HR Letter", value: "hr_letter" },
-    { label: "Internship Letter Completion", value: "internship_completion" },
-    { label: "Travel NOC Letter", value: "travel_noc" },
-    { label: "Visa Letter", value: "visa" },
-  ];
-
   // Handle dropdown selection
-  const handleNewTemplateSelect = (type) => {
+  const handleNewTemplateSelect = (option) => {
     setTemplateMenuOpen(false);
-    if (type === "Certification Reimbursement") {
-      window.open(
-        "https://docs.google.com/document/d/193TkX-J6HHpoWx8Ahdhof3EukhGkk6VV/edit",
-        "_blank",
-        "noopener"
-      );
+    if (option.url) {
+      window.open(option.url, "_blank", "noopener");
     } else {
-      alert(`Selected: ${type}`);
+      alert(`Selected: ${option.label}`);
+    }
+  };
+
+  const handleRequestAction = async (requestId, action, notes = '') => {
+    try {
+      const response = await fetch(`http://localhost:4000/api/letter-requests/${requestId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: action,
+          adminNotes: notes
+        }),
+      });
+
+      if (response.ok) {
+        alert(`Request ${action} successfully!`);
+        fetchLetterRequests(); // Refresh the list
+      } else {
+        alert('Failed to update request. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error updating request:', error);
+      alert('Error updating request. Please try again.');
     }
   };
 
@@ -55,20 +135,21 @@ export default function AdminDashboard() {
     { id: "templates", label: "Manage Templates", icon: "📝" },
     { id: "requests", label: "Letter Requests", icon: "📨" },
     { id: "users", label: "User Management", icon: "👥" },
+    { id: "employeeData", label: "Employee Data", icon: "🗂️" },
     { id: "settings", label: "Settings", icon: "⚙️" },
   ];
 
   const stats = [
     {
       title: "Total Users",
-      value: "42",
+      value: employeeData.length.toString(),
       color: "bg-gradient-to-r from-blue-600 to-blue-400",
       iconBg: "bg-blue-100 text-blue-600",
       icon: "👥",
     },
     {
       title: "Pending Requests",
-      value: "15",
+      value: pendingRequests.toString(),
       color: "bg-gradient-to-r from-amber-500 to-amber-400",
       iconBg: "bg-amber-100 text-amber-600",
       icon: "⏳",
@@ -81,6 +162,14 @@ export default function AdminDashboard() {
       icon: "📄",
     },
   ];
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'approved': return 'text-green-600 bg-green-100';
+      case 'rejected': return 'text-red-600 bg-red-100';
+      default: return 'text-amber-600 bg-amber-100';
+    }
+  };
 
   return (
     <div className="flex h-screen w-screen bg-gray-50 text-gray-800 overflow-hidden">
@@ -110,25 +199,24 @@ export default function AdminDashboard() {
             ))}
           </nav>
         </div>
-        <div className="space-y-4">
-          <div className="bg-gray-50 p-4 rounded-xl flex items-center space-x-3 border border-gray-200">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
+        <div className="mt-8">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gray-200 text-gray-600 rounded-xl flex items-center justify-center font-bold">
               A
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-800">Admin</p>
-              <p className="text-xs text-gray-500">Administrator</p>
+              <div className="font-semibold">Admin</div>
+              <div className="text-xs text-gray-500">Administrator</div>
             </div>
           </div>
           <button
+            className="mt-6 w-full bg-red-50 text-red-600 py-2 rounded-lg font-semibold hover:bg-red-100 transition"
             onClick={handleLogout}
-            className="w-full bg-red-50 text-red-600 hover:bg-red-100 font-medium py-2 px-4 rounded-xl transition-all duration-300 border border-red-100"
           >
             Logout
           </button>
         </div>
       </aside>
-
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-auto">
         <div className="p-8 space-y-6">
@@ -139,6 +227,7 @@ export default function AdminDashboard() {
                 templates: "Manage Templates",
                 requests: "Letter Requests",
                 users: "User Management",
+                employeeData: "Employee Data",
                 settings: "Settings",
               }[activeTab]}
             </h1>
@@ -177,125 +266,159 @@ export default function AdminDashboard() {
                   </div>
                 ))}
               </div>
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800">
-                  Admin Overview
-                </h2>
-                <p className="text-gray-600">
-                  Welcome to the admin Dashboard. Here you can manage letter
-                  templates, review requests, and administer user accounts.
-                </p>
-              </div>
             </>
           )}
 
-          {activeTab === "templates" && (
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">
-                Letter Templates
-              </h2>
-              <div className="space-y-4" ref={templateMenuRef}>
-                <div className="flex justify-between items-center relative">
-                  <input
-                    type="text"
-                    placeholder="Search templates..."
-                    className="px-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {/* New Template Button and Dropdown */}
-                  <div className="relative">
-                    <button
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                      onClick={() =>
-                        setTemplateMenuOpen((prev) => !prev)
-                      }
-                    >
-                      + New Template
-                    </button>
-                    {/* Dropdown */}
-                    {templateMenuOpen && (
-                      <div className="absolute right-0 z-10 mt-2 w-64 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-                        <div className="py-2">
-                          {templateOptions.map((option) => (
-                            <button
-                              key={option.value}
-                              className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition"
-                              onClick={() =>
-                                handleNewTemplateSelect(option.label)
-                              }
-                            >
-                              {option.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {/* Templates Table */}
-                <div className="border rounded-lg overflow-hidden">
+          {activeTab === "requests" && (
+            <div className="mt-10">
+              <h2 className="text-2xl font-bold mb-4">Letter Requests</h2>
+              {letterRequests.length === 0 ? (
+                <div className="text-gray-600">No letter requests found.</div>
+              ) : (
+                <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Name
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Type
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Last Updated
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
+                        <th className="px-4 py-2 text-left">Employee</th>
+                        <th className="px-4 py-2 text-left">Letter Type</th>
+                        <th className="px-4 py-2 text-left">Request Date</th>
+                        <th className="px-4 py-2 text-left">Status</th>
+                        <th className="px-4 py-2 text-left">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      <tr>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                          Employment Verification
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          Verification
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          2023-05-15
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          <button className="text-blue-600 hover:text-blue-900 mr-3">
-                            Edit
-                          </button>
-                          <button className="text-red-600 hover:text-red-900">
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                          Salary Certificate
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          Certificate
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          2023-04-28
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          <button className="text-blue-600 hover:text-blue-900 mr-3">
-                            Edit
-                          </button>
-                          <button className="text-red-600 hover:text-red-900">
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
+                      {letterRequests.map((request) => (
+                        <tr key={request._id}>
+                          <td className="px-4 py-2">
+                            <div>
+                              <div className="font-medium">{request.employeeName}</div>
+                              <div className="text-sm text-gray-500">ID: {request.employeeId}</div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-2">{request.letterType}</td>
+                          <td className="px-4 py-2">
+                            {new Date(request.requestDate).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-2">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                              {request.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2">
+                            {request.status === 'pending' && (
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => handleRequestAction(request._id, 'approved')}
+                                  className="text-green-600 hover:text-green-900 text-sm font-medium"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() => handleRequestAction(request._id, 'rejected')}
+                                  className="text-red-600 hover:text-red-900 text-sm font-medium"
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            )}
+                            {request.status !== 'pending' && (
+                              <div className="text-sm text-gray-500">
+                                {request.adminNotes || 'No notes'}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
-              </div>
+              )}
             </div>
           )}
-          {/* You can add more tab content here for "requests", "users", "settings"... */}
+
+          {activeTab === "users" && (
+            <div className="mt-10">
+              <h2 className="text-2xl font-bold mb-4">User Management</h2>
+              <input
+                type="text"
+                placeholder="Search by name or employee ID..."
+                className="mb-4 px-4 py-2 border rounded w-full max-w-md"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+              {apiError ? (
+                <div className="text-red-600">Error loading employees: {apiError}</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2">Employee ID</th>
+                        <th className="px-4 py-2">Employee</th>
+                        <th className="px-4 py-2">Start date</th>
+                        <th className="px-4 py-2">Title</th>
+                        <th className="px-4 py-2">Home address - Full address</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredEmployees.map((row, idx) => (
+                        <tr key={idx}>
+                          <td className="px-4 py-2">{row.employeeId}</td>
+                          <td className="px-4 py-2">{row.name}</td>
+                          <td className="px-4 py-2">{row.startDate}</td>
+                          <td className="px-4 py-2">{row.title}</td>
+                          <td className="px-4 py-2">{row.address}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "employeeData" && (
+            <div className="mt-10">
+              <h2 className="text-2xl font-bold mb-4">Employee Data</h2>
+              <input
+                type="text"
+                placeholder="Search by name or employee ID..."
+                className="mb-4 px-4 py-2 border rounded w-full max-w-md"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+              {apiError ? (
+                <div className="text-red-600">Error loading employees: {apiError}</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2">Employee ID</th>
+                        <th className="px-4 py-2">Employee</th>
+                        <th className="px-4 py-2">Start date</th>
+                        <th className="px-4 py-2">Title</th>
+                        <th className="px-4 py-2">Home address - Full address</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredEmployees.map((row, idx) => (
+                        <tr key={idx}>
+                          <td className="px-4 py-2">{row.employeeId}</td>
+                          <td className="px-4 py-2">{row.name}</td>
+                          <td className="px-4 py-2">{row.startDate}</td>
+                          <td className="px-4 py-2">{row.title}</td>
+                          <td className="px-4 py-2">{row.address}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* You can add more tab content here for "settings", etc. */}
         </div>
       </main>
     </div>

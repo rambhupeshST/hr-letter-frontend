@@ -1,5 +1,4 @@
-
- {
+{
   "name": "hr-letter-frontend",
   "private": true,
   "version": "0.0.0",
@@ -11,7 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "papaparse": "^5.5.3",
+    "mongodb": "^6.18.0",
+    "papaparse": "^5.4.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.3"

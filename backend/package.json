@@ -1,5 +1,5 @@
 {
-  "name": "letter-backend",
+  "name": "backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,7 +11,10 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "csv-parser": "^3.2.0",
-    "mongoose": "^8.16.5"
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "mongoose": "^8.16.5",
+    "papaparse": "^5.5.3"
   }
 }
