@@ -5,15 +5,24 @@ const LetterRequest = require('../models/LetterRequest');
 // Submit a new letter request
 router.post('/', async (req, res) => {
   try {
+    console.log("👉 Incoming POST body:", req.body); // 👈 Add this log
+
     const { employeeId, employeeName, letterType } = req.body;
+
+    if (!employeeId || !employeeName || !letterType) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
     const newRequest = new LetterRequest({
       employeeId,
       employeeName,
       letterType
     });
+
     await newRequest.save();
     res.json(newRequest);
   } catch (err) {
+    console.error("❌ Backend error:", err.message); // 👈 Add this log
     res.status(500).json({ error: err.message });
   }
 });
