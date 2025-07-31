@@ -14,26 +14,25 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setIsLoading(true);
-  
+
     if (role === "Admin") {
       setIsLoading(false);
       navigate("/admin-dashboard");
       return;
     }
-  
-    // Employee login
+
     try {
       const response = await fetch("http://localhost:4000/api/employees/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          Employee_id: employeeId,
-          name: employeeName,
+          employeeId,        // corrected key
+          name: employeeName // key adjusted to 'name'
         }),
       });
       const data = await response.json();
       setIsLoading(false);
-  
+
       if (data.success) {
         localStorage.setItem("employee", JSON.stringify(data.employee));
         navigate("/dashboard");
@@ -44,7 +43,8 @@ export default function LoginPage() {
       setIsLoading(false);
       setError("Network error. Please try again.");
     }
-  };  
+  };
+
 
   return (
     <div className="flex h-screen w-screen overflow-hidden">

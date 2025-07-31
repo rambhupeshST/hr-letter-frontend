@@ -19,7 +19,7 @@ export default function AdminDashboard() {
       (row.employeeId && row.employeeId.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Dropdown template options with URLs
+  // Dropdown template options
   const templateOptions = [
     {
       label: "Certification Reimbursement",
@@ -48,10 +48,10 @@ export default function AdminDashboard() {
     },
   ];
 
-  // For tracking previous pending request count to detect new requests
+  // For tracking previous pending request count for notifications
   const prevPendingCountRef = useRef(0);
 
-  // Close dropdown menu if clicking outside
+  // Close template dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (templateMenuRef.current && !templateMenuRef.current.contains(event.target)) {
@@ -64,24 +64,31 @@ export default function AdminDashboard() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [templateMenuOpen]);
 
+  // Fetch employees and letter requests on mount
   useEffect(() => {
     fetchEmployees();
     fetchLetterRequests();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fetch employee data with detailed error logging
   const fetchEmployees = () => {
     fetch("http://localhost:4000/api/employees")
       .then((response) => {
-        if (!response.ok) throw new Error("Failed to load employee data");
+        if (!response.ok) throw new Error(`Failed to load employee data, status: ${response.status}`);
         return response.json();
       })
       .then((data) => {
         setEmployeeData(data);
+        setApiError("");
       })
-      .catch((err) => setApiError(err.message));
+      .catch((err) => {
+        console.error("Fetch employee error:", err);
+        setApiError(err.message);
+      });
   };
 
+  // Fetch letter requests and notify if new pending requests arrive
   const fetchLetterRequests = async () => {
     try {
       const response = await fetch("http://localhost:4000/api/letter-requests");
@@ -98,22 +105,25 @@ export default function AdminDashboard() {
         prevPendingCountRef.current = pendingCount;
         setPendingRequests(pendingCount);
       } else {
-        console.error("Failed to fetch letter requests");
+        console.error("Failed to fetch letter requests, status:", response.status);
       }
     } catch (error) {
       console.error("Error fetching letter requests:", error);
     }
   };
 
+  // Show notification message
   const showNotification = (message, type = "info") => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 5000);
   };
 
+  // Logout handler
   const handleLogout = () => {
     navigate("/");
   };
 
+  // Open selected template URL in new tab
   const handleNewTemplateSelect = (option) => {
     setTemplateMenuOpen(false);
     if (option.url) {
@@ -123,6 +133,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Handle approve/reject actions for letter requests
   const handleRequestAction = async (requestId, action, notes = "") => {
     try {
       const response = await fetch(`http://localhost:4000/api/letter-requests/${requestId}`, {
@@ -148,6 +159,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Navigation items
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: "📊" },
     { id: "templates", label: "Manage Templates", icon: "📝" },
@@ -181,7 +193,7 @@ export default function AdminDashboard() {
     },
   ];
 
-  // Make sure this is declared - used for status color badges
+  // Status badge color helper
   const getStatusColor = (status) => {
     switch (status) {
       case "approved":
@@ -301,6 +313,52 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* Manage Templates Tab */}
+          {activeTab === "templates" && (
+            <div className="mt-10">
+              <h2 className="text-2xl font-bold mb-4">Manage Templates</h2>
+              <div ref={templateMenuRef} className="relative inline-block text-left">
+                <button
+                  onClick={() => setTemplateMenuOpen((open) => !open)}
+                  className="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  aria-haspopup="true"
+                  aria-expanded={templateMenuOpen}
+                >
+                  Select Template
+                  <svg
+                    className="-mr-1 ml-2 h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+
+                {templateMenuOpen && (
+                  <div className="origin-top-right absolute z-10 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div className="py-1">
+                      {templateOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => handleNewTemplateSelect(option)}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Letter Requests Tab */}
           {activeTab === "requests" && (
             <div className="mt-10">
@@ -325,9 +383,7 @@ export default function AdminDashboard() {
                           <td className="px-4 py-2">
                             <div>
                               <div className="font-medium">{request.employeeName}</div>
-                              <div className="text-sm text-gray-500">
-                                ID: {request.employeeId}
-                              </div>
+                              <div className="text-sm text-gray-500">ID: {request.employeeId}</div>
                             </div>
                           </td>
                           <td className="px-4 py-2">{request.letterType}</td>
@@ -347,17 +403,13 @@ export default function AdminDashboard() {
                             {request.status === "pending" ? (
                               <div className="flex space-x-2">
                                 <button
-                                  onClick={() =>
-                                    handleRequestAction(request._id, "approved")
-                                  }
+                                  onClick={() => handleRequestAction(request._id, "approved")}
                                   className="text-green-600 hover:text-green-900 text-sm font-medium"
                                 >
                                   Approve
                                 </button>
                                 <button
-                                  onClick={() =>
-                                    handleRequestAction(request._id, "rejected")
-                                  }
+                                  onClick={() => handleRequestAction(request._id, "rejected")}
                                   className="text-red-600 hover:text-red-900 text-sm font-medium"
                                 >
                                   Reject
@@ -462,7 +514,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* Optional: Add other tabs here */}
+          {/* Settings tab can be added here if needed */}
         </div>
       </main>
     </div>

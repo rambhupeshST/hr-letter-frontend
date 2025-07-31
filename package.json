@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@okta/okta-auth-js": "^7.13.1",
+    "@okta/okta-react": "^6.10.0",
     "mongodb": "^6.18.0",
     "papaparse": "^5.4.1",
     "react": "^19.1.0",
