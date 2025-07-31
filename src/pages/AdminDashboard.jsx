@@ -11,13 +11,15 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [letterRequests, setLetterRequests] = useState([]);
   const [pendingRequests, setPendingRequests] = useState(0);
+  const [notification, setNotification] = useState(null);
+
   const filteredEmployees = employeeData.filter(
     (row) =>
       (row.name && row.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (row.employeeId && row.employeeId.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Dropdown options and their corresponding links
+  // Dropdown template options with URLs
   const templateOptions = [
     {
       label: "Certification Reimbursement",
@@ -46,16 +48,16 @@ export default function AdminDashboard() {
     },
   ];
 
-  // Close dropdown when clicking outside
+  // For tracking previous pending request count to detect new requests
+  const prevPendingCountRef = useRef(0);
+
+  // Close dropdown menu if clicking outside
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        templateMenuRef.current &&
-        !templateMenuRef.current.contains(event.target)
-      ) {
+    const handleClickOutside = (event) => {
+      if (templateMenuRef.current && !templateMenuRef.current.contains(event.target)) {
         setTemplateMenuOpen(false);
       }
-    }
+    };
     if (templateMenuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
@@ -63,6 +65,12 @@ export default function AdminDashboard() {
   }, [templateMenuOpen]);
 
   useEffect(() => {
+    fetchEmployees();
+    fetchLetterRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchEmployees = () => {
     fetch("http://localhost:4000/api/employees")
       .then((response) => {
         if (!response.ok) throw new Error("Failed to load employee data");
@@ -72,11 +80,7 @@ export default function AdminDashboard() {
         setEmployeeData(data);
       })
       .catch((err) => setApiError(err.message));
-  }, []);
-
-  useEffect(() => {
-    fetchLetterRequests();
-  }, []);
+  };
 
   const fetchLetterRequests = async () => {
     try {
@@ -84,18 +88,32 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         setLetterRequests(data);
-        setPendingRequests(data.filter(req => req.status === 'pending').length);
+
+        const pendingCount = data.filter((req) => req.status === "pending").length;
+
+        if (pendingCount > prevPendingCountRef.current) {
+          showNotification("New letter request received.", "info");
+        }
+
+        prevPendingCountRef.current = pendingCount;
+        setPendingRequests(pendingCount);
+      } else {
+        console.error("Failed to fetch letter requests");
       }
     } catch (error) {
-      console.error('Error fetching letter requests:', error);
+      console.error("Error fetching letter requests:", error);
     }
+  };
+
+  const showNotification = (message, type = "info") => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 5000);
   };
 
   const handleLogout = () => {
     navigate("/");
   };
 
-  // Handle dropdown selection
   const handleNewTemplateSelect = (option) => {
     setTemplateMenuOpen(false);
     if (option.url) {
@@ -105,28 +123,28 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleRequestAction = async (requestId, action, notes = '') => {
+  const handleRequestAction = async (requestId, action, notes = "") => {
     try {
       const response = await fetch(`http://localhost:4000/api/letter-requests/${requestId}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           status: action,
-          adminNotes: notes
+          adminNotes: notes,
         }),
       });
 
       if (response.ok) {
         alert(`Request ${action} successfully!`);
-        fetchLetterRequests(); // Refresh the list
+        fetchLetterRequests();
       } else {
-        alert('Failed to update request. Please try again.');
+        alert("Failed to update request. Please try again.");
       }
     } catch (error) {
-      console.error('Error updating request:', error);
-      alert('Error updating request. Please try again.');
+      console.error("Error updating request:", error);
+      alert("Error updating request. Please try again.");
     }
   };
 
@@ -163,11 +181,15 @@ export default function AdminDashboard() {
     },
   ];
 
+  // Make sure this is declared - used for status color badges
   const getStatusColor = (status) => {
     switch (status) {
-      case 'approved': return 'text-green-600 bg-green-100';
-      case 'rejected': return 'text-red-600 bg-red-100';
-      default: return 'text-amber-600 bg-amber-100';
+      case "approved":
+        return "text-green-600 bg-green-100";
+      case "rejected":
+        return "text-red-600 bg-red-100";
+      default:
+        return "text-amber-600 bg-amber-100";
     }
   };
 
@@ -199,6 +221,7 @@ export default function AdminDashboard() {
             ))}
           </nav>
         </div>
+
         <div className="mt-8">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gray-200 text-gray-600 rounded-xl flex items-center justify-center font-bold">
@@ -217,10 +240,11 @@ export default function AdminDashboard() {
           </button>
         </div>
       </aside>
+
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-auto">
         <div className="p-8 space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-col sm:flex-row">
             <h1 className="text-2xl font-bold text-gray-800 capitalize">
               {{
                 dashboard: "Admin Dashboard",
@@ -231,44 +255,53 @@ export default function AdminDashboard() {
                 settings: "Settings",
               }[activeTab]}
             </h1>
-            <span className="text-gray-600">Welcome, Admin 👋</span>
+            <span className="text-gray-600 mt-2 sm:mt-0">Welcome, Admin 👋</span>
           </div>
 
-          {activeTab === "dashboard" && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {stats.map((stat, index) => (
-                  <div
-                    key={index}
-                    className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition duration-300 border border-gray-100"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-gray-600 font-medium">
-                        {stat.title}
-                      </h3>
-                      <div
-                        className={`w-10 h-10 ${stat.iconBg} rounded-lg flex items-center justify-center text-lg`}
-                      >
-                        {stat.icon}
-                      </div>
-                    </div>
-                    <p className="text-3xl font-bold text-gray-800">
-                      {stat.value}
-                    </p>
-                    <div className="w-full mt-3 h-2 bg-gray-100 rounded-full">
-                      <div
-                        className={`${stat.color} h-2 rounded-full`}
-                        style={{
-                          width: `${(parseInt(stat.value) / 50) * 100}%`,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
+          {/* Notification Bar */}
+          {notification && (
+            <div
+              className={`p-3 rounded text-white font-medium mb-4 ${
+                notification.type === "success"
+                  ? "bg-green-600"
+                  : notification.type === "error"
+                  ? "bg-red-600"
+                  : "bg-blue-600"
+              }`}
+            >
+              {notification.message}
+            </div>
           )}
 
+          {/* Dashboard Tab */}
+          {activeTab === "dashboard" && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {stats.map((stat, index) => (
+                <div
+                  key={index}
+                  className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition duration-300 border border-gray-100"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-gray-600 font-medium">{stat.title}</h3>
+                    <div
+                      className={`w-10 h-10 ${stat.iconBg} rounded-lg flex items-center justify-center text-lg`}
+                    >
+                      {stat.icon}
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-gray-800">{stat.value}</p>
+                  <div className="w-full mt-3 h-2 bg-gray-100 rounded-full">
+                    <div
+                      className={`${stat.color} h-2 rounded-full`}
+                      style={{ width: `${(parseInt(stat.value) / 50) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Letter Requests Tab */}
           {activeTab === "requests" && (
             <div className="mt-10">
               <h2 className="text-2xl font-bold mb-4">Letter Requests</h2>
@@ -292,7 +325,9 @@ export default function AdminDashboard() {
                           <td className="px-4 py-2">
                             <div>
                               <div className="font-medium">{request.employeeName}</div>
-                              <div className="text-sm text-gray-500">ID: {request.employeeId}</div>
+                              <div className="text-sm text-gray-500">
+                                ID: {request.employeeId}
+                              </div>
                             </div>
                           </td>
                           <td className="px-4 py-2">{request.letterType}</td>
@@ -300,30 +335,37 @@ export default function AdminDashboard() {
                             {new Date(request.requestDate).toLocaleDateString()}
                           </td>
                           <td className="px-4 py-2">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                request.status
+                              )}`}
+                            >
                               {request.status}
                             </span>
                           </td>
                           <td className="px-4 py-2">
-                            {request.status === 'pending' && (
+                            {request.status === "pending" ? (
                               <div className="flex space-x-2">
                                 <button
-                                  onClick={() => handleRequestAction(request._id, 'approved')}
+                                  onClick={() =>
+                                    handleRequestAction(request._id, "approved")
+                                  }
                                   className="text-green-600 hover:text-green-900 text-sm font-medium"
                                 >
                                   Approve
                                 </button>
                                 <button
-                                  onClick={() => handleRequestAction(request._id, 'rejected')}
+                                  onClick={() =>
+                                    handleRequestAction(request._id, "rejected")
+                                  }
                                   className="text-red-600 hover:text-red-900 text-sm font-medium"
                                 >
                                   Reject
                                 </button>
                               </div>
-                            )}
-                            {request.status !== 'pending' && (
+                            ) : (
                               <div className="text-sm text-gray-500">
-                                {request.adminNotes || 'No notes'}
+                                {request.adminNotes || "No notes"}
                               </div>
                             )}
                           </td>
@@ -336,6 +378,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* User Management Tab */}
           {activeTab === "users" && (
             <div className="mt-10">
               <h2 className="text-2xl font-bold mb-4">User Management</h2>
@@ -344,7 +387,7 @@ export default function AdminDashboard() {
                 placeholder="Search by name or employee ID..."
                 className="mb-4 px-4 py-2 border rounded w-full max-w-md"
                 value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
               {apiError ? (
                 <div className="text-red-600">Error loading employees: {apiError}</div>
@@ -377,6 +420,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* Employee Data Tab */}
           {activeTab === "employeeData" && (
             <div className="mt-10">
               <h2 className="text-2xl font-bold mb-4">Employee Data</h2>
@@ -385,7 +429,7 @@ export default function AdminDashboard() {
                 placeholder="Search by name or employee ID..."
                 className="mb-4 px-4 py-2 border rounded w-full max-w-md"
                 value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
               {apiError ? (
                 <div className="text-red-600">Error loading employees: {apiError}</div>
@@ -418,7 +462,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* You can add more tab content here for "settings", etc. */}
+          {/* Optional: Add other tabs here */}
         </div>
       </main>
     </div>
