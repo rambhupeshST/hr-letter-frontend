@@ -1,27 +1,24 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Letter type to template URL mapping
 const letterTemplates = {
-  visa_letter:
-    "https://docs.google.com/document/d/1KGIPp31eyIGixIfBqk3O20nrHY47oq_N/edit",
-  certification_reimbursement:
-    "https://docs.google.com/document/d/1KIKkCJ6KglJvabsModKEVkVqhKl_njP_/edit",
-  internship_completion:
-    "https://docs.google.com/document/d/1YuRniRa8TlCRB9-x0oWFPMMkxmUCJfOR/edit",
-  hr_letter:
-    "https://docs.google.com/document/d/1SgBMZYqTtQlbvUbk38S3YXk-b0xokwl4/edit",
-  travel_noc:
-    "https://docs.google.com/document/d/1wc6birpYSbuxyQhDgHLD-2yaapLJEawl/edit",
+  visa_letter: "https://docs.google.com/document/d/1KGIPp31eyIGixIfBqk3O20nrHY47oq_N/edit",
+  certification_reimbursement: "https://docs.google.com/document/d/1KIKkCJ6KglJvabsModKEVkVqhKl_njP_/edit",
+  internship_completion: "https://docs.google.com/document/d/1YuRniRa8TlCRB9-x0oWFPMMkxmUCJfOR/edit",
+  hr_letter: "https://docs.google.com/document/d/1SgBMZYqTtQlbvUbk38S3YXk-b0xokwl4/edit",
+  travel_noc: "https://docs.google.com/document/d/1wc6birpYSbuxyQhDgHLD-2yaapLJEawl/edit",
 };
 
 export default function EmployeeDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [showRequestModal, setShowRequestModal] = useState(false);
-  const [selectedLetterType, setSelectedLetterType] = useState(null);
   const [requestHistory, setRequestHistory] = useState([]);
   const [currentEmployee, setCurrentEmployee] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [formData, setFormData] = useState({
+    address: "",
+    comments: "",
+    letterType: ""
+  });
 
   const [stats, setStats] = useState([
     {
@@ -57,7 +54,12 @@ export default function EmployeeDashboard() {
       return;
     }
     try {
-      setCurrentEmployee(JSON.parse(storedValue));
+      const employee = JSON.parse(storedValue);
+      setCurrentEmployee(employee);
+      setFormData(prev => ({
+        ...prev,
+        address: employee.address || ""
+      }));
     } catch (err) {
       navigate("/");
     }
@@ -65,8 +67,7 @@ export default function EmployeeDashboard() {
 
   useEffect(() => {
     if (currentEmployee) fetchRequestHistory();
-    // Only want to call when currentEmployee changes
-  }, [currentEmployee]); // eslint-disable-line
+  }, [currentEmployee]);
 
   const fetchRequestHistory = async () => {
     try {
@@ -76,7 +77,6 @@ export default function EmployeeDashboard() {
       if (response.ok) {
         const data = await response.json();
 
-        // Show notification on status change
         const prev = prevRequestHistoryRef.current;
         data.forEach((req) => {
           const prevReq = prev.find((r) => r._id === req._id);
@@ -109,12 +109,17 @@ export default function EmployeeDashboard() {
     navigate("/");
   };
 
-  const handleRequestLetter = (option) => {
-    setSelectedLetterType(option);
-    setShowRequestModal(true);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const submitLetterRequest = async () => {
+    if (!formData.letterType) {
+      showNotification("Please select a letter type", "error");
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:4000/api/letter-requests", {
         method: "POST",
@@ -122,13 +127,20 @@ export default function EmployeeDashboard() {
         body: JSON.stringify({
           employeeId: currentEmployee.employeeId,
           employeeName: currentEmployee.name,
-          letterType: selectedLetterType.value,
+          letterType: formData.letterType,
+          address: formData.address,
+          employeeComments: formData.comments,
+          status: "pending"
         }),
       });
 
       if (response.ok) {
         showNotification("Your letter request has been sent.", "success");
-        setShowRequestModal(false);
+        setFormData({
+          address: currentEmployee.address || "",
+          comments: "",
+          letterType: ""
+        });
         await fetchRequestHistory();
       } else {
         showNotification("Failed to submit request.", "error");
@@ -154,11 +166,11 @@ export default function EmployeeDashboard() {
   ];
 
   const letterOptions = [
-    { label: "Certification Reimbursement", icon: "🎓", value: "certification_reimbursement" },
-    { label: "HR Letter", icon: "👤", value: "hr_letter" },
-    { label: "Internship Letter Completion", icon: "🎯", value: "internship_completion" },
-    { label: "Travel NOC Letter", icon: "✈️", value: "travel_noc" },
-    { label: "Visa Letter", icon: "🛂", value: "visa_letter" },
+    { label: "Certification Reimbursement", value: "certification_reimbursement" },
+    { label: "HR Letter", value: "hr_letter" },
+    { label: "Internship Letter Completion", value: "internship_completion" },
+    { label: "Travel NOC Letter", value: "travel_noc" },
+    { label: "Visa Letter", value: "visa_letter" },
   ];
 
   if (!currentEmployee) return <div className="p-10 text-lg">Loading...</div>;
@@ -190,7 +202,7 @@ export default function EmployeeDashboard() {
         <div className="mt-4 space-y-4">
           <div className="flex items-center space-x-3 p-3 bg-gray-50 border border-gray-200 rounded-xl">
             <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
-              E
+              {currentEmployee.name.charAt(0)}
             </div>
             <div>
               <p className="text-sm font-medium text-gray-800">{currentEmployee.name}</p>
@@ -264,21 +276,101 @@ export default function EmployeeDashboard() {
           </>
         )}
 
-        {/* Request Tab */}
+        {/* Request Tab - Now shows form directly */}
         {activeTab === "request" && (
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 max-w-2xl">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Request a Letter</h2>
-            <div className="grid grid-cols-1 gap-4">
-              {letterOptions.map((option) => (
-                <button
-                  key={option.label}
-                  className="flex items-center space-x-3 px-5 py-4 bg-blue-50 hover:bg-blue-100 rounded-lg shadow-sm border border-blue-100 text-left transition text-blue-800"
-                  onClick={() => handleRequestLetter(option)}
+            <h2 className="text-xl font-semibold mb-6 text-gray-800">Letter Request Form</h2>
+            
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Employee Name</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                    value={currentEmployee.name}
+                    readOnly
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                    value={currentEmployee.employeeId}
+                    readOnly
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Letter Type *</label>
+                <select
+                  name="letterType"
+                  value={formData.letterType}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  required
                 >
-                  <span className="text-2xl">{option.icon}</span>
-                  <span className="font-medium">{option.label}</span>
-                </button>
-              ))}
+                  <option value="">Select Letter Type</option>
+                  {letterOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  placeholder="Enter your current address"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Additional Comments</label>
+                <textarea
+                  name="comments"
+                  value={formData.comments}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  rows="4"
+                  placeholder="Please provide any additional information that might help process your request..."
+                ></textarea>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-4 pt-6">
+              <button
+                onClick={() => {
+                  setFormData({
+                    address: currentEmployee.address || "",
+                    comments: "",
+                    letterType: ""
+                  });
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Clear Form
+              </button>
+              <button
+                onClick={submitLetterRequest}
+                disabled={!formData.letterType}
+                className={`px-6 py-2 rounded-md ${
+                  formData.letterType
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              >
+                Submit Request
+              </button>
             </div>
           </div>
         )}
@@ -288,54 +380,69 @@ export default function EmployeeDashboard() {
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
             <h2 className="text-xl font-semibold mb-4 text-gray-800">Letter History</h2>
             {requestHistory.length === 0 ? (
-              <p className="text-gray-600">No letter requests found.</p>
+              <div className="text-center py-8">
+                <p className="text-gray-500">No letter requests found.</p>
+                <button 
+                  onClick={() => setActiveTab("request")}
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  Request a Letter
+                </button>
+              </div>
             ) : (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left">Letter Type</th>
-                    <th className="px-4 py-2 text-left">Request Date</th>
-                    <th className="px-4 py-2 text-left">Status</th>
-                    <th className="px-4 py-2 text-left">Notes</th>
-                    <th className="px-4 py-2 text-left">Download</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {requestHistory.map((request) => (
-                    <tr key={request._id}>
-                      <td className="px-4 py-2">{request.letterType}</td>
-                      <td className="px-4 py-2">
-                        {new Date(request.requestDate).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-2">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                            request.status
-                          )}`}
-                        >
-                          {request.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 text-sm text-gray-600">
-                        {request.adminNotes || "-"}
-                      </td>
-                      <td className="px-4 py-2">
-                        {request.status === "approved" &&
-                          letterTemplates[request.letterType] && (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Letter Type</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin Notes</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {requestHistory.map((request) => (
+                      <tr key={request._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 capitalize">
+                          {request.letterType.replace(/_/g, ' ')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(request.requestDate).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                              request.status
+                            )}`}
+                          >
+                            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          {request.adminNotes || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {request.status === "approved" && letterTemplates[request.letterType] && (
                             <a
                               href={letterTemplates[request.letterType]}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-block bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1 rounded"
+                              className="text-blue-600 hover:text-blue-900"
                             >
-                              Download Template
+                              Download
                             </a>
                           )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         )}
@@ -343,52 +450,55 @@ export default function EmployeeDashboard() {
         {/* Profile Tab */}
         {activeTab === "profile" && (
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 max-w-lg">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">My Profile</h2>
-            <div className="space-y-3">
-              <div>
-                <span className="text-gray-500">Name:</span>
-                <span className="ml-2 font-medium text-gray-800">{currentEmployee.name}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Employee ID:</span>
-                <span className="ml-2 font-medium text-gray-800">{currentEmployee.employeeId}</span>
-              </div>
-              {currentEmployee.email && (
-                <div>
-                  <span className="text-gray-500">Email:</span>
-                  <span className="ml-2 font-medium text-gray-800">{currentEmployee.email}</span>
+            <h2 className="text-xl font-semibold mb-6 text-gray-800">My Profile</h2>
+            <div className="space-y-4">
+              <div className="border-b pb-4">
+                <h3 className="text-sm font-medium text-gray-500">Personal Information</h3>
+                <div className="mt-2 grid grid-cols-1 gap-y-4 gap-x-8 sm:grid-cols-2">
+                  <div>
+                    <p className="text-sm text-gray-500">Full Name</p>
+                    <p className="mt-1 text-sm font-medium text-gray-900">{currentEmployee.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Employee ID</p>
+                    <p className="mt-1 text-sm font-medium text-gray-900">{currentEmployee.employeeId}</p>
+                  </div>
+                  {currentEmployee.email && (
+                    <div>
+                      <p className="text-sm text-gray-500">Email</p>
+                      <p className="mt-1 text-sm font-medium text-gray-900">{currentEmployee.email}</p>
+                    </div>
+                  )}
+                  {currentEmployee.department && (
+                    <div>
+                      <p className="text-sm text-gray-500">Department</p>
+                      <p className="mt-1 text-sm font-medium text-gray-900">{currentEmployee.department}</p>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Contact Information</h3>
+                <div className="mt-2 grid grid-cols-1 gap-y-4 gap-x-8 sm:grid-cols-2">
+                  {currentEmployee.address && (
+                    <div className="sm:col-span-2">
+                      <p className="text-sm text-gray-500">Address</p>
+                      <p className="mt-1 text-sm font-medium text-gray-900">{currentEmployee.address}</p>
+                    </div>
+                  )}
+                  {currentEmployee.phone && (
+                    <div>
+                      <p className="text-sm text-gray-500">Phone</p>
+                      <p className="mt-1 text-sm font-medium text-gray-900">{currentEmployee.phone}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
       </main>
-
-      {/* Modal */}
-      {showRequestModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl max-w-sm w-full space-y-4">
-            <h3 className="text-lg font-semibold">Confirm Letter Request</h3>
-            <p>
-              Are you sure you want to request a <strong>{selectedLetterType?.label}</strong>?
-            </p>
-            <div className="flex space-x-4">
-              <button
-                onClick={submitLetterRequest}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-              >
-                Submit
-              </button>
-              <button
-                onClick={() => setShowRequestModal(false)}
-                className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -12,6 +12,7 @@ export default function AdminDashboard() {
   const [letterRequests, setLetterRequests] = useState([]);
   const [pendingRequests, setPendingRequests] = useState(0);
   const [notification, setNotification] = useState(null);
+  const [previewRequest, setPreviewRequest] = useState(null);
 
   const filteredEmployees = employeeData.filter(
     (row) =>
@@ -148,15 +149,130 @@ export default function AdminDashboard() {
       });
 
       if (response.ok) {
-        alert(`Request ${action} successfully!`);
+        showNotification(`Request ${action} successfully!`, "success");
         fetchLetterRequests();
       } else {
-        alert("Failed to update request. Please try again.");
+        showNotification("Failed to update request. Please try again.", "error");
       }
     } catch (error) {
       console.error("Error updating request:", error);
-      alert("Error updating request. Please try again.");
+      showNotification("Error updating request. Please try again.", "error");
     }
+  };
+
+  // Preview Modal Component
+  const PreviewModal = ({ request, onClose, onApprove, onReject }) => {
+    if (!request) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold">Request Preview</h3>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              ✕
+            </button>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium text-gray-700">Employee Information</h4>
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <div>
+                  <p className="text-sm text-gray-500">Name</p>
+                  <p>{request.employeeName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Employee ID</p>
+                  <p>{request.employeeId}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p>{request.employeeEmail}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Department</p>
+                  <p>{request.employeeDepartment}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Address</p>
+                  <p>{request.employeeAddress || "Not provided"}</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-medium text-gray-700">Letter Details</h4>
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <div>
+                  <p className="text-sm text-gray-500">Letter Type</p>
+                  <p>{request.letterType}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Request Date</p>
+                  <p>{new Date(request.requestDate).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Status</p>
+                  <p className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                    {request.status}
+                  </p>
+                </div>
+                {request.adminNotes && (
+                  <div>
+                    <p className="text-sm text-gray-500">Admin Notes</p>
+                    <p>{request.adminNotes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-medium text-gray-700">Additional Details</h4>
+              <div className="mt-2 bg-gray-50 p-4 rounded">
+                {request.comments && (
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-500">Employee Comments</p>
+                    <p className="whitespace-pre-wrap">{request.comments}</p>
+                  </div>
+                )}
+                {Object.entries(request.formData || {}).map(([key, value]) => (
+                  <div key={key} className="mb-2">
+                    <p className="text-sm text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                    <p className="whitespace-pre-wrap">{value || 'Not provided'}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {request.status === "pending" && (
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  onClick={() => {
+                    const notes = prompt("Please enter rejection notes:");
+                    if (notes !== null) {
+                      onReject(notes);
+                    }
+                  }}
+                  className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-50"
+                >
+                  Reject
+                </button>
+                <button
+                  onClick={() => {
+                    const notes = prompt("Please enter approval notes (optional):");
+                    onApprove(notes || "");
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Approve
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // Navigation items
@@ -164,9 +280,7 @@ export default function AdminDashboard() {
     { id: "dashboard", label: "Dashboard", icon: "📊" },
     { id: "templates", label: "Manage Templates", icon: "📝" },
     { id: "requests", label: "Letter Requests", icon: "📨" },
-    { id: "users", label: "User Management", icon: "👥" },
     { id: "employeeData", label: "Employee Data", icon: "🗂️" },
-    { id: "settings", label: "Settings", icon: "⚙️" },
   ];
 
   const stats = [
@@ -262,9 +376,7 @@ export default function AdminDashboard() {
                 dashboard: "Admin Dashboard",
                 templates: "Manage Templates",
                 requests: "Letter Requests",
-                users: "User Management",
                 employeeData: "Employee Data",
-                settings: "Settings",
               }[activeTab]}
             </h1>
             <span className="text-gray-600 mt-2 sm:mt-0">Welcome, Admin 👋</span>
@@ -403,13 +515,29 @@ export default function AdminDashboard() {
                             {request.status === "pending" ? (
                               <div className="flex space-x-2">
                                 <button
-                                  onClick={() => handleRequestAction(request._id, "approved")}
+                                  onClick={() => setPreviewRequest(request)}
+                                  className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                                >
+                                  Preview
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    const notes = prompt("Please enter approval notes (optional):");
+                                    if (notes !== null) {
+                                      handleRequestAction(request._id, "approved", notes || "");
+                                    }
+                                  }}
                                   className="text-green-600 hover:text-green-900 text-sm font-medium"
                                 >
                                   Approve
                                 </button>
                                 <button
-                                  onClick={() => handleRequestAction(request._id, "rejected")}
+                                  onClick={() => {
+                                    const notes = prompt("Please enter rejection notes:");
+                                    if (notes !== null) {
+                                      handleRequestAction(request._id, "rejected", notes);
+                                    }
+                                  }}
                                   className="text-red-600 hover:text-red-900 text-sm font-medium"
                                 >
                                   Reject
@@ -421,48 +549,6 @@ export default function AdminDashboard() {
                               </div>
                             )}
                           </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* User Management Tab */}
-          {activeTab === "users" && (
-            <div className="mt-10">
-              <h2 className="text-2xl font-bold mb-4">User Management</h2>
-              <input
-                type="text"
-                placeholder="Search by name or employee ID..."
-                className="mb-4 px-4 py-2 border rounded w-full max-w-md"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {apiError ? (
-                <div className="text-red-600">Error loading employees: {apiError}</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-2">Employee ID</th>
-                        <th className="px-4 py-2">Employee</th>
-                        <th className="px-4 py-2">Start date</th>
-                        <th className="px-4 py-2">Title</th>
-                        <th className="px-4 py-2">Home address - Full address</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredEmployees.map((row, idx) => (
-                        <tr key={idx}>
-                          <td className="px-4 py-2">{row.employeeId}</td>
-                          <td className="px-4 py-2">{row.name}</td>
-                          <td className="px-4 py-2">{row.startDate}</td>
-                          <td className="px-4 py-2">{row.title}</td>
-                          <td className="px-4 py-2">{row.address}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -494,7 +580,7 @@ export default function AdminDashboard() {
                         <th className="px-4 py-2">Employee</th>
                         <th className="px-4 py-2">Start date</th>
                         <th className="px-4 py-2">Title</th>
-                        <th className="px-4 py-2">Home address - Full address</th>
+                        <th className="px-4 py-2">Home address</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -513,10 +599,16 @@ export default function AdminDashboard() {
               )}
             </div>
           )}
-
-          {/* Settings tab can be added here if needed */}
         </div>
       </main>
+
+      {/* Preview Modal */}
+      <PreviewModal
+        request={previewRequest}
+        onClose={() => setPreviewRequest(null)}
+        onApprove={(notes) => handleRequestAction(previewRequest?._id, "approved", notes)}
+        onReject={(notes) => handleRequestAction(previewRequest?._id, "rejected", notes)}
+      />
     </div>
   );
 }
