@@ -15,21 +15,29 @@ export default function LoginPage() {
     setError("");
     setIsLoading(true);
 
+    // Admin login check
     if (role === "Admin") {
-      setIsLoading(false);
-      navigate("/admin-dashboard");
+      if (employeeId === "ABC0012" && employeeName === "Rhea Nambiar") {
+        setIsLoading(false);
+        navigate("/admin-dashboard");
+      } else {
+        setIsLoading(false);
+        setError("Invalid Admin credentials");
+      }
       return;
     }
 
+    // Employee login flow
     try {
       const response = await fetch("http://localhost:4000/api/employees/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          employeeId,        // corrected key
-          name: employeeName // key adjusted to 'name'
+          employeeId,
+          name: employeeName
         }),
       });
+
       const data = await response.json();
       setIsLoading(false);
 
@@ -44,7 +52,6 @@ export default function LoginPage() {
       setError("Network error. Please try again.");
     }
   };
-
 
   return (
     <div className="flex h-screen w-screen overflow-hidden">

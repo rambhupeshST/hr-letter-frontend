@@ -1,5 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+axios.get("http://localhost:4000/api/employees")
+  .then(response => {
+    console.log(response.data);
+  })
+  .catch(error => {
+    console.error(error);
+  });
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -377,6 +386,7 @@ export default function AdminDashboard() {
                 templates: "Manage Templates",
                 requests: "Letter Requests",
                 employeeData: "Employee Data",
+            
               }[activeTab]}
             </h1>
             <span className="text-gray-600 mt-2 sm:mt-0">Welcome, Admin 👋</span>
